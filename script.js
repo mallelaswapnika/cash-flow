@@ -268,8 +268,18 @@ document
 
     const doc = new jsPDF();
 
-    const symbol =
-      currencySymbols[currentCurrency];
+    // Currency names for PDF
+    const currencyNames = {
+      INR: "INR",
+      USD: "USD",
+      EUR: "EUR"
+    };
+
+    const currency =
+      currencyNames[currentCurrency];
+
+    // Title
+    doc.setFontSize(20);
 
     doc.text(
       "Cash Flow Report",
@@ -277,32 +287,38 @@ document
       20
     );
 
+    // Salary
+    doc.setFontSize(14);
+
     doc.text(
-      `Salary: ${symbol}${totalSalary.innerText}`,
+      `Salary: ${currency} ${totalSalary.innerText}`,
       20,
       40
     );
 
     let y = 60;
 
+    // Expense List
     expenses.forEach(exp => {
 
       doc.text(
-        `${exp.name} - ${symbol}${(
+        `${exp.name} - ${currency} ${(
           exp.amount * exchangeRate
         ).toFixed(2)}`,
         20,
         y
       );
 
-      y += 10;
+      y += 12;
     });
 
+    // Remaining Balance
     doc.text(
-      `Remaining Balance: ${symbol}${remainingBalance.innerText}`,
+      `Remaining Balance: ${currency} ${remainingBalance.innerText}`,
       20,
       y + 20
     );
 
+    // Save PDF
     doc.save("report.pdf");
 });
