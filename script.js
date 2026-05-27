@@ -86,7 +86,7 @@ salaryBtn.addEventListener("click", () => {
 
   const value = Number(salaryInput.value);
 
-  if (value <= 0) {
+  if (value <= 0 || salaryInput.value === "") {
     alert("Enter valid salary");
     return;
   }
@@ -107,7 +107,11 @@ expenseBtn.addEventListener("click", () => {
 
   const amount = Number(expenseAmount.value);
 
-  if (name === "" || amount <= 0) {
+  if (
+    name === "" ||
+    amount <= 0 ||
+    expenseAmount.value === ""
+  ) {
     alert("Enter valid expense");
     return;
   }
@@ -120,7 +124,10 @@ expenseBtn.addEventListener("click", () => {
 
   expenses.push(expense);
 
-  localStorage.setItem("expenses", JSON.stringify(expenses));
+  localStorage.setItem(
+    "expenses",
+    JSON.stringify(expenses)
+  );
 
   updateUI();
 
@@ -131,9 +138,14 @@ expenseBtn.addEventListener("click", () => {
 // Delete Expense
 function deleteExpense(id) {
 
-  expenses = expenses.filter(exp => exp.id !== id);
+  expenses = expenses.filter(
+    exp => exp.id !== id
+  );
 
-  localStorage.setItem("expenses", JSON.stringify(expenses));
+  localStorage.setItem(
+    "expenses",
+    JSON.stringify(expenses)
+  );
 
   updateUI();
 }
@@ -147,18 +159,21 @@ function updateUI() {
   salaryCurrency2.innerText = symbol;
   salaryCurrency3.innerText = symbol;
 
-  const convertedSalary = (salary * exchangeRate).toFixed(2);
+  const convertedSalary =
+    (salary * exchangeRate).toFixed(2);
 
   const totalExp = expenses.reduce(
     (sum, exp) => sum + exp.amount,
     0
   );
 
-  const convertedExpenses = (totalExp * exchangeRate).toFixed(2);
+  const convertedExpenses =
+    (totalExp * exchangeRate).toFixed(2);
 
   const balance = salary - totalExp;
 
-  const convertedBalance = (balance * exchangeRate).toFixed(2);
+  const convertedBalance =
+    (balance * exchangeRate).toFixed(2);
 
   totalSalary.innerText = convertedSalary;
 
@@ -167,7 +182,7 @@ function updateUI() {
   remainingBalance.innerText = convertedBalance;
 
   // Threshold Alert
-  if (balance < salary * 0.1) {
+  if (salary > 0 && balance < salary * 0.1) {
 
     balanceText.classList.add("low-balance");
 
@@ -189,21 +204,28 @@ function updateUI() {
     const li = document.createElement("li");
 
     li.innerHTML = `
-      ${exp.name} -
-      ${symbol}${(exp.amount * exchangeRate).toFixed(2)}
+      <span>
+        ${exp.name} -
+        ${symbol}${(
+          exp.amount * exchangeRate
+        ).toFixed(2)}
+      </span>
 
-      <button class="delete-btn"
-        onclick="deleteExpense(${exp.id})">
-
+      <button
+        class="delete-btn"
+        onclick="deleteExpense(${exp.id})"
+      >
         Delete
-
       </button>
     `;
 
     expenseList.appendChild(li);
   });
 
-  renderChart(convertedExpenses, convertedBalance);
+  renderChart(
+    convertedExpenses,
+    convertedBalance
+  );
 }
 
 // Chart.js
@@ -221,53 +243,66 @@ function renderChart(totalExp, balance) {
 
     data: {
 
-      labels: ["Expenses", "Balance"],
+      labels: [
+        "Expenses",
+        "Remaining Balance"
+      ],
 
       datasets: [{
         data: [totalExp, balance]
       }]
+    },
+
+    options: {
+      responsive: true
     }
   });
 }
 
 // PDF Download
-document.getElementById("downloadBtn")
-.addEventListener("click", () => {
+document
+  .getElementById("downloadBtn")
+  .addEventListener("click", () => {
 
-  const { jsPDF } = window.jspdf;
+    const { jsPDF } = window.jspdf;
 
-  const doc = new jsPDF();
+    const doc = new jsPDF();
 
-  const symbol = currencySymbols[currentCurrency];
-
-  doc.text("Cash Flow Report", 20, 20);
-
-  doc.text(
-    `Salary: ${symbol}${totalSalary.innerText}`,
-    20,
-    40
-  );
-
-  let y = 60;
-
-  expenses.forEach(exp => {
+    const symbol =
+      currencySymbols[currentCurrency];
 
     doc.text(
-      `${exp.name} - ${symbol}${(
-        exp.amount * exchangeRate
-      ).toFixed(2)}`,
+      "Cash Flow Report",
       20,
-      y
+      20
     );
 
-    y += 10;
-  });
+    doc.text(
+      `Salary: ${symbol}${totalSalary.innerText}`,
+      20,
+      40
+    );
 
-  doc.text(
-    `Remaining Balance: ${symbol}${remainingBalance.innerText}`,
-    20,
-    y + 20
-  );
+    let y = 60;
 
-  doc.save("report.pdf");
+    expenses.forEach(exp => {
+
+      doc.text(
+        `${exp.name} - ${symbol}${(
+          exp.amount * exchangeRate
+        ).toFixed(2)}`,
+        20,
+        y
+      );
+
+      y += 10;
+    });
+
+    doc.text(
+      `Remaining Balance: ${symbol}${remainingBalance.innerText}`,
+      20,
+      y + 20
+    );
+
+    doc.save("report.pdf");
 });
